@@ -1,0 +1,25 @@
+{
+  "name": "quickbasic-emulator-web",
+  "version": "0.0.1",
+  "description": "Browser runtime for QuickBasicEmulator (GW-BASIC, QBasic, QuickBASIC 4.5)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cpaglebbeek/QuickBasicEmulator_Web.git"
+  },
+  "license": "AGPL-3.0-or-later",
+  "author": "cpaglebbeek",
+  "dependencies": {
+    "@cpaglebbeek/quickbasic-emulator-core": "file:../QuickBasicEmulator_Core"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0",
+    "typescript": "^5.4.0"
+  }
+}
