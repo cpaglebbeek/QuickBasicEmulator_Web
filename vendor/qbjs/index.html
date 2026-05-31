@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>QBJS</title>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="manifest" href="manifest.json"></link>
+        <link rel="stylesheet" href="qbjs-ide.css"></link>
+        <link rel="stylesheet" href="codemirror/codemirror.min.css"></link>
+        <link rel="stylesheet" href="codemirror/dialog.css">
+        <link rel="stylesheet" href="codemirror/matchesonscrollbar.css">
+        <link id="ide-theme" rel="stylesheet" href="codemirror/themes/qbjs.css"></link>
+        <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"></link>
+
+        <script type="text/javascript" src="codemirror/codemirror.min.js"></script>
+        <script type="text/javascript" src="codemirror/qb-lang.js"></script>
+        <script type="text/javascript" src="codemirror/active-line.js"></script>
+        <script type="text/javascript" src="util/jszip.min.js"></script>
+        <script type="text/javascript" src="util/lzutf8.js"></script>
+        <script type="text/javascript" src="util/shorty.min.js"></script>
+        <script type="text/javascript" src="util/pako.2.1.0.min.js"></script>
+        <script type="text/javascript" src="util/hexy.js"></script>
+
+        <script type="text/javascript" src="codemirror/lang/css.js"></script>
+        <script type="text/javascript" src="codemirror/lang/clike.js"></script>
+        <script type="text/javascript" src="codemirror/lang/javascript.js"></script>
+        <script type="text/javascript" src="codemirror/lang/markdown.js"></script>
+        <script type="text/javascript" src="codemirror/lang/python.js"></script>
+        <script type="text/javascript" src="codemirror/lang/sql.js"></script>
+        <script type="text/javascript" src="codemirror/lang/text.js"></script>
+        <script type="text/javascript" src="codemirror/lang/xml.js"></script>
+        <script type="text/javascript" src="codemirror/lang/htmlmixed.js"></script>
+        <script type="text/javascript" src="codemirror/lang/php.js"></script>
+
+        <script type="text/javascript" src="codemirror/dialog.js"></script>
+        <script type="text/javascript" src="codemirror/searchcursor.js"></script>
+        <script type="text/javascript" src="codemirror/search.js"></script>
+        <script type="text/javascript" src="codemirror/annotatescrollbar.js"></script>
+        <script type="text/javascript" src="codemirror/matchesonscrollbar.js"></script>
+        <script type="text/javascript" src="codemirror/vim.js"></script>
+
+        <script type="text/javascript" src="util/showdown.min.js"></script>
+    </head>
+    <body style="display:none">
+        <div id="toolbar">
+            <a href="javascript:IDE.newProject()" class="toolbar-button" id="toolbar-button-new" title="New"></a>
+            <a href="javascript:IDE.openProject()" class="toolbar-button" id="toolbar-button-open" title="Open"></a>
+            <a href="javascript:IDE.saveProject()" class="toolbar-button" id="toolbar-button-save" title="Save"></a>
+            <div class="spacer"></div>
+            <a href="javascript:IDE.runProgram()" class="toolbar-button" id="toolbar-button-run" title="Run"></a>
+            <a href="javascript:IDE.stopProgram()" class="toolbar-button" id="toolbar-button-stop" title="Stop"></a>
+            <a href="javascript:IDE.shareProgram()" class="toolbar-button" id="toolbar-button-share" title="Share / Export"></a>
+            <div class="spacer"></div>
+            <a href="javascript:IDE.showMethodDialog()" class="toolbar-button" id="toolbar-button-methods" title="Show Methods"></a>
+            <a href="javascript:IDE.showOptionDialog()" class="toolbar-button" id="toolbar-button-settings" title="Settings"></a>
+            <div class="toolbar-button" style="width:2.5em"></div>
+
+            <a href="javascript:IDE.showDialog('about-dialog')" class="toolbar-button" id="toolbar-button-about" title="About QBJS"></a>
+            <div class="spacer" style="float:right"></div>
+            <a href="javascript:IDE.showConsole()" class="toolbar-button" id="toolbar-button-console-show" title="Show Console"></a>
+            <a href="javascript:IDE.showConsole()" class="toolbar-button" id="toolbar-button-console-hide" title="Hide Console" style="display:none"></a>
+            <a href="javascript:IDE.slideRight()" class="toolbar-button" id="toolbar-button-slide-right" title="Slide View Right"></a>
+            <a href="javascript:IDE.slideLeft()" class="toolbar-button" id="toolbar-button-slide-left" title="Slide View Left"></a>
+        </div>
+        <div id="code-container">
+            <div id="code-tabs" class="tabs">
+                <div id="code-tab-menu" class="tab"><div id="code-slide-left" onclick="IDE.codeTabSlideLeft()">◄</div><div id="code-slide-right" onclick="IDE.codeTabSlideRight()">►</div></div><div id="code-tab-container"><div id="mainbas" class="tab active" onclick="IDE.changeCodeTab(this)">Main</div></div></div>
+            <div id="code"></div>
+        </div>
+        <div id="slider">
+        </div>
+        <div id="game-container">
+            <div id="gx-container">
+                <a href="javascript:IDE.runProgram()" id="gx-load-screen">&nbsp;</a><span style="visibility:hidden; position: absolute; left: 0; right: 0; font-family:dosvga8">_</span>
+            </div>
+            <div id="vslider"></div>
+            <div id="output-container">
+                <div id="tabs">
+                    <div id="tab-console" class="tab" onclick="IDE.changeTab('console')">Console</div><div id="tab-js" class="tab" onclick="IDE.changeTab('js')">Javascript</div><div id="tab-fs" class="tab" onclick="IDE.changeTab('fs')">Files</div><div id="tab-help" class="tab" onclick="IDE.changeTab('help')">Help</div>
+                </div>
+                <div id="output-content">
+                    <div id="warning-container"></div>
+                    <div id="js-code"></div>
+                    <div id="fs-browser">
+                        <div id="fs-path">
+                            <span id="fs-url">/</span>
+                            <div id="fs-refresh" title="Refresh" onclick="IDE.refreshFS()"></div>
+                            <div id="fs-new-folder" title="New Directory" onclick="IDE.onNewDirectory()"></div>
+                            <div id="fs-new-file" title="New File" onclick="IDE.onNewFile()"></div>
+                            <div id="fs-upload" title="Upload" onclick="IDE.onUploadFile()"></div>
+                        </div>
+                        <div id="fs-contents">
+                        </div>
+                    </div>
+                    <div id="help">
+                        <div id="help-nav" class="help-nav">
+                            <a href="javascript:GitHelp.navhome()">Home</a>
+                            <a href="javascript:GitHelp.navback()">Back</a>
+                        </div>
+                        <div id="help-container" class="help">
+                            <div id="help-sidebar" class="help-sidebar"></div>
+                            <div id="help-page" class="help-page"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="gx-footer"></div>
+
+        <form style="display:none">
+            <input id="file-input" type="file" accept=".bas, .zip">
+        </form>
+
+        <dialog id="share-dialog">
+            <div style="margin-bottom:5px">Copy the link below to share your code:</div>
+            <div><textarea id="share-code" rows="15" cols="60" readonly></textarea></div>
+            <div style="margin-top: 5px; float:left">Launch Mode:
+                <select id="share-mode" onchange="IDE.shareProgram()">
+                    <option value="">IDE (Default)</option>
+                    <option value="play">Play</option>
+                    <option value="auto">Auto</option>
+                </select>
+            </div>
+            <a id="export-button" href="javascript:IDE.exportProgram()" style="float:left; margin-top: 7px; margin-left: 10px">Export</a>
+            <a href="javascript:IDE.closeDialog()" style="display:block; float:right; margin-top: 7px">Close</a>
+            <a href="javascript:IDE.testShare()" style="display: block; float:right; margin-top: 7px; margin-right: 10px">Test</a>
+        </dialog>
+
+        <dialog id="prog-sel-dialog">
+            <div>
+                No main.bas file found.<br/>
+                Select main program source file:
+            </div>
+            <select id="prog-sel-sources" size="10" style="display:block; width:100%; margin-top:10px"></select>
+            <div style="text-align:center; margin-top:10px">
+                <a href="javascript:IDE.onSelMainProg()">Ok</a>
+                <a href="javascript:IDE.closeDialog()">Cancel</a>
+            </div>
+        </dialog>
+
+        <dialog id="options-dialog">
+            <div>Select a theme:</div>
+            <select id="theme-picker" onchange="IDE.changeTheme(this.value)">
+                <option value="qbjs">Default</option>
+                <option value="qb45">QBasic</option>
+                <option value="blackout">Blackout</option>
+                <option value="qb64-vscode">QB64 VSCode</option>
+                <option value="win-classic">Windows Classic</option>
+                <option value="vscode-dark">VSCode Dark</option>
+            </select>
+            <br/><br/>
+            <div>Key Bindings:</div>
+            <select id="key-bindings" onchange="IDE.changeKeyMap(this.value)">
+                <option value="default">Default</option>
+                <option value="vim">VIM</option>
+            </select>
+            <br/><br/>
+            <input type="checkbox" id="console-persistence" onchange="IDE.toggleConsolePersistence(this.checked)"/>
+            <label for="console-persistence">Remember console visibility and panel</label>
+            <br/><br/>
+            <div>Convert Source Encoding:</div>
+            <div style="margin-top:5px"><a href="#" onclick="IDE.convert437ToUTF()">Code Page 437 to UTF</a></div>
+            <div>
+                <a href="javascript:IDE.closeDialog()" style="display:block; float:right; margin-top: 7px">Close</a>
+            </div>
+        </dialog>
+
+        <dialog id="methods-dialog">
+            <div id="method-tabs">
+                <div id="tab-methods" class="tab active" onclick="IDE.changeMethodTab('methods')">Methods</div><div id="tab-imports" class="tab" onclick="IDE.changeMethodTab('imports')">Imports</div>
+            </div>
+            <div id="methods" class="methods">
+                <table>
+                    <thead>
+                        <th>Method</th>
+                        <th>Type</th>
+                        <th>Arguments</th>
+                    </thead>
+                    <tbody id="methods-content"></tbody>
+                </table>
+            </div>
+            <div id="imports" class="methods" style="display:none">
+                <table>
+                    <thead>
+                        <th>Method</th>
+                        <th>Type</th>
+                        <th>Arguments</th>
+                    </thead>
+                    <tbody id="imports-content"></tbody>
+                </table>
+            </div>
+            <a href="javascript:IDE.closeDialog()" style="display:block; float:right; margin-top: 7px">Close</a>
+        </dialog>
+
+        <dialog id="about-dialog">
+            <div>
+                <img id="logo" src="logo.png" onclick="window.open('https://github.com/boxgaming/qbjs/wiki', '_blank')">
+                <p>QBJS - QBasic for the Web!</p>
+                <p>Version: <a href="https://github.com/boxgaming/qbjs/releases" target="_blank">0.11.0</a></p>
+                <p></p>
+                <p>
+                    QBJS brings the fun and accessibility of QBasic to the browser.<br/>
+                    Learn more:<br/>
+                    <ul>
+                        <li><a href="javascript:IDE.showHelp('language')">QBasic Language Support</a></li>
+                        <li><a href="javascript:IDE.showHelp('keywords')">Supported Keywords</a></li>
+                        <li><a href="javascript:IDE.showHelp('samples')">Samples</a></li>
+                    </ul>
+                </p>
+                <p>Copyright (c) 2022-2026 boxgaming</p>
+                <div>
+                    <a href="javascript:IDE.closeDialog()" style="display:block; float:right">Close</a>
+                </div>
+            </div>
+        </dialog>
+    </body>
+    <script language="javascript">
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./service-worker.js', { scope: "." });
+        }
+    </script>
+    <script language="javascript" src="vfs.js"></script>
+    <script language="javascript" src="gx/gx.js"></script>
+    <script language="javascript" src="qb.js"></script>
+    <script language="javascript" src="qb2js.js"></script>
+    <script language="javascript" src="githelp.js"></script>
+    <script language="javascript" src="qbjs-ide.js"></script>
+</html>

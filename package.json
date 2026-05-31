@@ -1,13 +1,15 @@
 {
   "name": "quickbasic-emulator-web",
-  "version": "0.0.1",
-  "description": "Browser runtime for QuickBasicEmulator (GW-BASIC, QBasic, QuickBASIC 4.5)",
+  "version": "0.0.3",
+  "description": "Browser runtime for QuickBasicEmulator (GW-BASIC, QBasic, QuickBASIC 4.5) — vendored QBJS + dialect-adapter",
   "type": "module",
   "private": true,
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "repository": {
     "type": "git",
@@ -20,6 +22,7 @@
   },
   "devDependencies": {
     "vite": "^5.2.0",
+    "vitest": "^1.6.0",
     "typescript": "^5.4.0"
   }
 }

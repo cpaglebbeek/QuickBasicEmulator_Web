@@ -4,11 +4,55 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>QuickBasicEmulator — Browser Runtime</title>
+    <style>
+      body { font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
+      h1 { margin-bottom: 0; }
+      .subtitle { color: #666; margin-top: 0.3rem; }
+      .dialect-bar { display: flex; gap: 0.5rem; align-items: center; margin: 1.2rem 0; }
+      .dialect-bar label { font-weight: bold; }
+      .dialect-bar select { padding: 0.4rem 0.6rem; font-family: inherit; }
+      textarea { width: 100%; min-height: 220px; font-family: inherit; padding: 0.6rem; box-sizing: border-box; }
+      button { padding: 0.5rem 1rem; font-family: inherit; cursor: pointer; }
+      #status { margin: 1rem 0; padding: 0.6rem; border-radius: 4px; }
+      .ok { background: #e7f6ec; color: #155724; border: 1px solid #c3e6cb; }
+      .err { background: #fbeaea; color: #721c24; border: 1px solid #f5c6cb; }
+      .info { background: #eef1f5; color: #383d41; border: 1px solid #d6d8db; }
+      .err ul { margin: 0.3rem 0 0 1.2rem; }
+      .open-ide { float: right; }
+    </style>
   </head>
   <body>
     <h1>QuickBasicEmulator</h1>
-    <p><strong>v0.0.1-Gates</strong> — Skeleton placeholder. Runtime arrives v0.0.3-Davidoff.</p>
-    <p>See <a href="https://github.com/cpaglebbeek/Meta_QuickBasicEmulator">project meta</a>.</p>
+    <p class="subtitle"><strong>v0.0.3-Davidoff</strong> — Web runtime (vendored QBJS + GW-BASIC dialect-mode). Full IDE: <a href="/vendor/qbjs/" class="open-ide">open QBJS IDE →</a></p>
+
+    <div class="dialect-bar">
+      <label for="dialect">Dialect:</label>
+      <select id="dialect">
+        <option value="qb45">QuickBASIC 4.5 (default)</option>
+        <option value="qbasic">QBasic 1.0/1.1</option>
+        <option value="gwbasic">GW-BASIC (line-numbers required)</option>
+      </select>
+      <span id="dialect-info" style="margin-left: 1rem; color: #666; font-size: 0.9rem;"></span>
+    </div>
+
+    <textarea id="source" spellcheck="false">' Hello in QuickBASIC 4.5
+PRINT "Hello, World!"
+END
+</textarea>
+
+    <p>
+      <button id="validate-btn">Validate dialect</button>
+      <button id="run-btn">Validate &amp; Run (opens QBJS IDE)</button>
+    </p>
+
+    <div id="status" class="info">Ready. Switch dialect, paste source, click Validate.</div>
+
+    <hr style="margin-top: 2rem;">
+    <p style="font-size: 0.85rem; color: #666;">
+      Project meta: <a href="https://github.com/cpaglebbeek/Meta_QuickBasicEmulator">cpaglebbeek/Meta_QuickBasicEmulator</a> · Licentie: AGPL-3.0 ·
+      Vendored QBJS (MIT): <a href="https://github.com/boxgaming/qbjs">boxgaming/qbjs</a>
+    </p>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

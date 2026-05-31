@@ -1,0 +1,12 @@
+{
+    "start_url": "https://boxgaming.github.io/qbjs/",
+    "name": "QBJS",
+    "icons": [
+      {
+        "src": "logo-256.png",
+        "type": "image/png",
+        "sizes": "256x256"
+      }
+    ],
+    "display": "standalone"
+  }

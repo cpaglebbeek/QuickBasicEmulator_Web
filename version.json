@@ -1,7 +1,10 @@
 {
-  "version": "0.0.1",
-  "codename": "Gates",
-  "released": "2026-05-31",
+  "version": "0.0.3",
+  "codename": "Davidoff",
+  "released": "2026-06-01",
   "stable": false,
-  "type": "skeleton"
+  "type": "vendored-qbjs-fork",
+  "vendored": {
+    "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
+  }
 }
