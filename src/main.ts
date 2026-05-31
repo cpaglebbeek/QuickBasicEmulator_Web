@@ -1,10 +1,11 @@
 /**
  * QuickBasicEmulator_Web — entry point
  *
+ * v0.1.1-Letwin: voeg .bas file-loader toe (FileReader + drag-drop + auto-dialect-detect).
+ *
  * v0.0.3-Davidoff: vendored QBJS-fork + dialect-adapter UI shell.
  *  - Dialect-switcher activeert pre-flight validator
  *  - "Run"-button opent QBJS IDE met source ge-encoded in URL (QBJS-conventie)
- *  - In v0.0.4-Whitten: inline-embed QBJS i.p.v. nieuwe tab
  */
 
 import version from '../version.json';
@@ -18,6 +19,9 @@ const $status = document.getElementById('status') as HTMLDivElement | null;
 const $validateBtn = document.getElementById('validate-btn') as HTMLButtonElement | null;
 const $runBtn = document.getElementById('run-btn') as HTMLButtonElement | null;
 const $info = document.getElementById('dialect-info') as HTMLSpanElement | null;
+const $fileInput = document.getElementById('file-input') as HTMLInputElement | null;
+const $clearBtn = document.getElementById('clear-btn') as HTMLButtonElement | null;
+const $fileName = document.getElementById('file-name') as HTMLSpanElement | null;
 
 function currentDialect(): Dialect {
   return ($dialect?.value || 'qb45') as Dialect;
@@ -71,6 +75,65 @@ function runProgram(): void {
   window.open(ideUrl, '_blank');
   showStatus(`<strong>${currentDialect().toUpperCase()}</strong>: validated. QBJS IDE opened in new tab — paste source there for v0.0.3.`, 'info');
 }
+
+/** Auto-detect dialect from filename hints. Returns null if no hint found. */
+function detectDialectFromFilename(name: string): Dialect | null {
+  const lc = name.toLowerCase();
+  if (lc.includes('_gwbasic') || lc.includes('-gwbasic') || lc.includes('gwbasic.')) return 'gwbasic';
+  if (lc.includes('_qb45') || lc.includes('-qb45') || lc.includes('qb45.')) return 'qb45';
+  if (lc.includes('_qbasic') || lc.includes('-qbasic') || lc.includes('qbasic.')) return 'qbasic';
+  return null;
+}
+
+async function loadFile(file: File): Promise<void> {
+  if (!$source) return;
+  try {
+    const text = await file.text();
+    $source.value = text;
+    if ($fileName) $fileName.textContent = `loaded: ${file.name} (${file.size.toLocaleString()} bytes)`;
+    const hinted = detectDialectFromFilename(file.name);
+    if (hinted && $dialect) {
+      $dialect.value = hinted;
+      refreshInfo();
+      showStatus(
+        `Loaded <code>${escapeHtml(file.name)}</code> — dialect auto-detected as <strong>${hinted.toUpperCase()}</strong>.`,
+        'info'
+      );
+    } else {
+      showStatus(
+        `Loaded <code>${escapeHtml(file.name)}</code> — using current dialect <strong>${currentDialect().toUpperCase()}</strong>. Switch above if needed.`,
+        'info'
+      );
+    }
+  } catch (e) {
+    showStatus(`Failed to load file: ${escapeHtml(String(e))}`, 'err');
+  }
+}
+
+$fileInput?.addEventListener('change', () => {
+  const f = $fileInput.files?.[0];
+  if (f) loadFile(f);
+});
+
+$clearBtn?.addEventListener('click', () => {
+  if ($source) $source.value = '';
+  if ($fileInput) $fileInput.value = '';
+  if ($fileName) $fileName.textContent = 'no file — paste source below or drop a .bas file on the textarea';
+  showStatus('Cleared.', 'info');
+});
+
+// Drag-drop on textarea
+$source?.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  $source.classList.add('dragover');
+});
+$source?.addEventListener('dragleave', () => $source.classList.remove('dragover'));
+$source?.addEventListener('drop', (e) => {
+  e.preventDefault();
+  $source.classList.remove('dragover');
+  const f = e.dataTransfer?.files?.[0];
+  if (f) loadFile(f);
+});
 
 $dialect?.addEventListener('change', refreshInfo);
 $validateBtn?.addEventListener('click', () => { validateNow(); });

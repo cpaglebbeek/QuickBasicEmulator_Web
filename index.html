@@ -19,11 +19,15 @@
       .info { background: #eef1f5; color: #383d41; border: 1px solid #d6d8db; }
       .err ul { margin: 0.3rem 0 0 1.2rem; }
       .open-ide { float: right; }
+      .file-bar { display: flex; gap: 0.5rem; align-items: center; margin: 0.8rem 0; flex-wrap: wrap; }
+      .file-bar input[type="file"] { font-family: inherit; }
+      #file-name { color: #666; font-size: 0.9rem; }
+      textarea.dragover { outline: 2px dashed #0070c9; outline-offset: -4px; background: #f0f7ff; }
     </style>
   </head>
   <body>
     <h1>QuickBasicEmulator</h1>
-    <p class="subtitle"><strong>v0.1.0-Letwin</strong> — MVP-1 LIVE (vendored QBJS + GW-BASIC dialect-mode). Full IDE: <a href="vendor/qbjs/" class="open-ide">open QBJS IDE →</a></p>
+    <p class="subtitle"><strong>v0.1.1-Letwin</strong> — MVP-1 LIVE (vendored QBJS + GW-BASIC dialect-mode + .bas file loader). Full IDE: <a href="vendor/qbjs/" class="open-ide">open QBJS IDE →</a></p>
 
     <div class="dialect-bar">
       <label for="dialect">Dialect:</label>
@@ -33,6 +37,13 @@
         <option value="gwbasic">GW-BASIC (line-numbers required)</option>
       </select>
       <span id="dialect-info" style="margin-left: 1rem; color: #666; font-size: 0.9rem;"></span>
+    </div>
+
+    <div class="file-bar">
+      <label for="file-input"><strong>Load .bas:</strong></label>
+      <input type="file" id="file-input" accept=".bas,.BAS,text/plain" />
+      <button id="clear-btn" type="button">Clear</button>
+      <span id="file-name">no file — paste source below or drop a .bas file on the textarea</span>
     </div>
 
     <textarea id="source" spellcheck="false">' Hello in QuickBASIC 4.5

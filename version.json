@@ -1,10 +1,10 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "codename": "Letwin",
   "released": "2026-06-01",
   "stable": true,
   "type": "mvp-1-live",
-  "milestone": "MVP-1 LIVE op icthorse.nl/quickbasic-emulator/",
+  "milestone": "MVP-1 LIVE + .bas file-loader (FileReader + drag-drop + auto-dialect-detect)",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   }
