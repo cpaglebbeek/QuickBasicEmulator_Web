@@ -88,11 +88,29 @@ function findBlockEnd(lines: string[], startIdx: number): number {
 }
 
 /**
- * Pass 2: rewrite forward GOTO labelname where the label sits IMMEDIATELY after the
- * end of an enclosing WHILE/FOR/DO loop. In that case the GOTO is a "break" pattern
- * and can be safely replaced with EXIT WHILE / EXIT FOR / EXIT DO.
- *
- * Returns mutated copy of lines + list of rewrites for the report.
+ * v0.3.3: Compute the innermost loop kind open AT a given line by walking lines [0, lineIdx)
+ * and tracking WHILE/FOR/DO opens/closes. Returns the top of the stack, or null if no open loop.
+ */
+function innermostLoopAt(lines: string[], lineIdx: number): 'WHILE' | 'FOR' | 'DO' | null {
+  const stack: ('WHILE' | 'FOR' | 'DO')[] = [];
+  for (let i = 0; i < lineIdx; i++) {
+    const t = (lines[i] ?? '').trim();
+    if (t === '' || t.startsWith("'") || /^REM\b/i.test(t)) continue;
+    const code = t.replace(/"[^"]*"/g, '""').replace(/'.*$/, '');
+    if (/\bWHILE\b/i.test(code) && !/^WEND\b/i.test(code)) stack.push('WHILE');
+    else if (/^FOR\b/i.test(code)) stack.push('FOR');
+    else if (/^DO\b/i.test(code)) stack.push('DO');
+    else if (/^WEND\b/i.test(code)) { if (stack[stack.length - 1] === 'WHILE') stack.pop(); }
+    else if (/^NEXT\b/i.test(code)) { if (stack[stack.length - 1] === 'FOR') stack.pop(); }
+    else if (/^LOOP\b/i.test(code)) { if (stack[stack.length - 1] === 'DO') stack.pop(); }
+  }
+  return stack.length > 0 ? stack[stack.length - 1]! : null;
+}
+
+/**
+ * Pass 2: rewrite forward GOTO labelname using innermost-loop-at-GOTO-position.
+ * Replaces with EXIT WHILE / EXIT FOR / EXIT DO based on which loop encloses the GOTO source-line.
+ * For IF...GOTO shorthand (no THEN): injects THEN to keep syntax valid.
  */
 function rewriteForwardGotoToExit(
   lines: string[],
@@ -101,22 +119,7 @@ function rewriteForwardGotoToExit(
   const rewrites: TransformReport['goto_to_exit_rewrites'] = [];
   const out = [...lines];
 
-  // For each label, look backward from label-line skipping comments/blanks to find
-  // the previous code line. If it is WEND/NEXT/LOOP, we know the label sits after a loop.
-  const labelLoopType = new Map<string, 'WHILE' | 'FOR' | 'DO'>();
-  for (const [name, labelIdx] of labels) {
-    for (let i = labelIdx - 1; i >= 0; i--) {
-      const t = (out[i] ?? '').trim();
-      if (t === '' || t.startsWith("'") || /^REM\b/i.test(t)) continue;
-      if (/^WEND\s*$/i.test(t)) labelLoopType.set(name, 'WHILE');
-      else if (/^NEXT(\s|\b)/i.test(t)) labelLoopType.set(name, 'FOR');
-      else if (/^LOOP(\s|$|\b)/i.test(t)) labelLoopType.set(name, 'DO');
-      break;
-    }
-  }
-  if (labelLoopType.size === 0) return { lines: out, rewrites };
-
-  // Now rewrite GOTO label uses (must be FORWARD: GOTO line < label line).
+  // v0.3.3: Use innermost-loop-AT-GOTO-line instead of label-context heuristic.
   for (let i = 0; i < out.length; i++) {
     const raw = out[i] ?? '';
     if (isCommentLine(raw)) continue;
@@ -128,9 +131,10 @@ function rewriteForwardGotoToExit(
       const name = m[1];
       if (!name) continue;
       const labelIdx = labels.get(name);
-      const loopType = labelLoopType.get(name);
-      if (labelIdx === undefined || loopType === undefined) continue;
+      if (labelIdx === undefined) continue;
       if (i >= labelIdx) continue; // not forward
+      const loopType = innermostLoopAt(out, i);
+      if (loopType === null) continue;
       const exitStmt = `EXIT ${loopType}`;
       // Detect "IF ... GOTO label" shorthand (no THEN). QBasic accepts that for GOTO
       // but EXIT FOR/WHILE/DO requires THEN. Insert THEN to keep semantics valid.

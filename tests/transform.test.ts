@@ -156,11 +156,10 @@ describe('transform — K2026C.BAS real-world (optional)', () => {
     expect(report.goto_targets.length).toBeGreaterThanOrEqual(1);
   });
 
-  it.skipIf(!exists)('still reports remaining GOTO as untouched', () => {
+  it.skipIf(!exists)('reports goto_targets (pass-2 may rewrite all)', () => {
     const src = readFileSync(path, 'latin1');
-    const { report, transformed } = transformClassicToStructured(src);
-    // GOTO remains in transformed output (we don't restructure it)
-    expect(transformed).toMatch(/\bGOTO\b/);
+    const { report } = transformClassicToStructured(src);
     expect(report.goto_targets.length).toBeGreaterThan(0);
+    // Pass-2 (v0.3.4+) may rewrite all GOTOs to EXIT statements — acceptable
   });
 });

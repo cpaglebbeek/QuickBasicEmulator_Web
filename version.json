@@ -1,14 +1,11 @@
 {
-  "version": "0.3.3",
+  "version": "0.3.4",
   "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "transformer-pass-2-innermost-loop",
-  "milestone": "Pass-2 EXIT-type bepaald door INNERMOST OPEN loop op GOTO-positie (was: label-context). Fix K2026: GOTO buiten FOR maar voor label-na-NEXT → moet EXIT WHILE worden (was: EXIT FOR — fout).",
+  "type": "transformer-pass-2-properly-wired",
+  "milestone": "Pass-2 nu daadwerkelijk gebruikt innermostLoopAt (v0.3.3 had OUDE labelLoopType nog actief, edit was niet volledig geland)",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
-  },
-  "sibling_repos": {
-    "x86_native": "https://github.com/cpaglebbeek/QuickBasicEmulator_X86 (v0.3.0-Chen)"
   }
 }
