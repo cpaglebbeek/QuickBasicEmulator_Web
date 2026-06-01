@@ -27,7 +27,7 @@
   </head>
   <body>
     <h1>QuickBasicEmulator</h1>
-    <p class="subtitle"><strong>v0.2.0-Weiland</strong> — Classic-to-structured transformer + 43/43 tests. Full IDE: <a href="vendor/qbjs/" class="open-ide">open QBJS IDE →</a></p>
+    <p class="subtitle"><strong>v0.3.0-Chen</strong> — Web + X86 native runtime beschikbaar. Full IDE: <a href="vendor/qbjs/" class="open-ide">open QBJS IDE →</a></p>
 
     <div class="dialect-bar">
       <label for="dialect">Dialect:</label>
@@ -61,7 +61,13 @@ END
     <div id="status" class="info">Ready. Switch dialect, paste source, click Validate.</div>
 
     <div style="margin-top: 1rem; padding: 0.6rem; background: #fff8e1; border: 1px solid #ffd54f; border-radius: 4px; font-size: 0.9rem;">
-      <strong>Runtime-limiet:</strong> Classic-BASIC programma's met <code>GOTO</code>/<code>GOSUB</code>/<code>RETURN</code> draaien niet native in QBJS. Sinds <strong>v0.2.0-Weiland</strong>: knop <em>Transform classic→structured</em> herschrijft veilige GOSUB-RETURN blocks automatisch naar SUB-procedures. GOTO blijft voor v0.3.0-Chen (X86 fork QB64-PE).
+      <strong>Runtime-limiet QBJS:</strong> Classic-BASIC programma's met <code>GOTO</code>/<code>GOSUB</code>/<code>RETURN</code> draaien niet native in QBJS. Sinds v0.2.0: knop <em>Transform classic→structured</em> herschrijft veilige GOSUB-RETURN blocks automatisch naar SUB-procedures. GOTO blijft beperkt.
+    </div>
+
+    <div style="margin-top: 0.6rem; padding: 0.6rem; background: #e8f5e9; border: 1px solid #66bb6a; border-radius: 4px; font-size: 0.9rem;">
+      <strong>🎉 Nieuw — v0.3.0-Chen X86 native runtime LIVE:</strong> classic-BASIC programma's met <code>GOTO</code>/<code>GOSUB</code> draaien nu volledig native via lokale CLI (QB64-PE fork). K2026C-stijl source compileert naar native binary. Build:
+      <code style="display: block; margin-top: 0.3rem; padding: 0.3rem; background: #f1f8e9;">git clone --recurse-submodules https://github.com/cpaglebbeek/QuickBasicEmulator_X86 &amp;&amp; cd QuickBasicEmulator_X86/vendor/qb64pe &amp;&amp; ./setup_osx.command</code>
+      Daarna: <code>./qb64pe -c input.bas -o output</code>. <a href="https://github.com/cpaglebbeek/QuickBasicEmulator_X86">Repo + instructies →</a>
     </div>
 
     <hr style="margin-top: 2rem;">
