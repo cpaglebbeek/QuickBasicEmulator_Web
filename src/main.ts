@@ -10,6 +10,7 @@
 
 import version from '../version.json';
 import { setDialect, validate, getSpec, type Dialect } from './dialect-adapter';
+import { detectRuntimeWarnings } from './dialects/runtime-warnings';
 
 console.log(`QuickBasicEmulator_Web v${version.version}-${version.codename} (${version.released})`);
 
@@ -50,7 +51,14 @@ function validateNow(): boolean {
   setDialect(d);
   const res = validate(source, d);
   if (res.ok) {
-    showStatus(`<strong>${d.toUpperCase()}</strong>: source accepted (${source.split(/\r?\n/).length} lines).`, 'ok');
+    let html = `<strong>${d.toUpperCase()}</strong>: source accepted (${source.split(/\r?\n/).length} lines).`;
+    const warns = detectRuntimeWarnings(source);
+    if (warns.length > 0) {
+      const counts = warns.reduce<Record<string, number>>((acc, w) => { acc[w.feature] = (acc[w.feature] || 0) + 1; return acc; }, {});
+      const summary = Object.entries(counts).map(([k, v]) => `${k}×${v}`).join(', ');
+      html += `<br><br>⚠ <strong>QBJS-runtime warning (${warns.length} lines: ${summary}):</strong> ${escapeHtml(warns[0]!.message)}`;
+    }
+    showStatus(html, 'ok');
     return true;
   }
   const items = res.errors.map((e) => `<li>Line ${e.line}: ${escapeHtml(e.message)}</li>`).join('');
