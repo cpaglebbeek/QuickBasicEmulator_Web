@@ -1,10 +1,10 @@
 {
-  "version": "0.3.2",
+  "version": "0.3.3",
   "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "transformer-pass-2-then-injection",
-  "milestone": "Pass-2 rewrites IF...GOTO (no THEN) injecteren THEN vóór EXIT — anders syntax-error in QBJS",
+  "type": "transformer-pass-2-innermost-loop",
+  "milestone": "Pass-2 EXIT-type bepaald door INNERMOST OPEN loop op GOTO-positie (was: label-context). Fix K2026: GOTO buiten FOR maar voor label-na-NEXT → moet EXIT WHILE worden (was: EXIT FOR — fout).",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   },
