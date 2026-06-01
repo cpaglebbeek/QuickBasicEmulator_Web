@@ -1,10 +1,10 @@
 {
-  "version": "0.1.5",
+  "version": "0.1.6",
   "codename": "Letwin",
   "released": "2026-06-01",
   "stable": true,
   "type": "mvp-1-live",
-  "milestone": "Twee Run-knoppen: Auto-run (mode=auto, geen errors zichtbaar) + Open in IDE (handmatige Run, errors zichtbaar)",
+  "milestone": "Runtime-limiet notice in UI + package.json/version.json sync (was 0.1.4 vs 0.1.5 drift)",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   }

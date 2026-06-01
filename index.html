@@ -27,7 +27,7 @@
   </head>
   <body>
     <h1>QuickBasicEmulator</h1>
-    <p class="subtitle"><strong>v0.1.5-Letwin</strong> — MVP-1 LIVE (vendored QBJS + dialect-modes + .bas loader + QBJS-runtime warnings + dual Run-buttons). Full IDE: <a href="vendor/qbjs/" class="open-ide">open QBJS IDE →</a></p>
+    <p class="subtitle"><strong>v0.1.6-Letwin</strong> — MVP-1 LIVE (alles van v0.1.5 + runtime-limiet notice). Full IDE: <a href="vendor/qbjs/" class="open-ide">open QBJS IDE →</a></p>
 
     <div class="dialect-bar">
       <label for="dialect">Dialect:</label>
@@ -58,6 +58,10 @@ END
     </p>
 
     <div id="status" class="info">Ready. Switch dialect, paste source, click Validate.</div>
+
+    <div style="margin-top: 1rem; padding: 0.6rem; background: #fff8e1; border: 1px solid #ffd54f; border-radius: 4px; font-size: 0.9rem;">
+      <strong>Runtime-limiet:</strong> Classic-BASIC programma's met <code>GOTO</code>/<code>GOSUB</code>/<code>RETURN</code> (zoals K2026C.BAS) draaien niet in QBJS — pre-flight waarschuwt vooraf. Volledige classic-support komt in <strong>v0.3.0-Chen</strong> (X86 fork QB64-PE). Voor nu werken structured QBasic/QB45 programma's met <code>SUB</code>/<code>FUNCTION</code> volledig.
+    </div>
 
     <hr style="margin-top: 2rem;">
     <p style="font-size: 0.85rem; color: #666;">
