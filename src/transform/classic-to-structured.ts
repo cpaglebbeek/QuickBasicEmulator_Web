@@ -132,8 +132,16 @@ function rewriteForwardGotoToExit(
       if (labelIdx === undefined || loopType === undefined) continue;
       if (i >= labelIdx) continue; // not forward
       const exitStmt = `EXIT ${loopType}`;
+      // Detect "IF ... GOTO label" shorthand (no THEN). QBasic accepts that for GOTO
+      // but EXIT FOR/WHILE/DO requires THEN. Insert THEN to keep semantics valid.
+      const ifNoThenRe = new RegExp(`(\\bIF\\b[^"]*?)\\s+GOTO\\s+${name}\\b(?![^]*?\\bTHEN\\b)`, 'i');
       const gotoRe = new RegExp(`\\bGOTO\\s+${name}\\b`, 'i');
-      const replaced = modified.replace(gotoRe, exitStmt);
+      let replaced: string;
+      if (ifNoThenRe.test(modified)) {
+        replaced = modified.replace(ifNoThenRe, `$1 THEN ${exitStmt}`);
+      } else {
+        replaced = modified.replace(gotoRe, exitStmt);
+      }
       if (replaced !== modified) {
         rewrites.push({ line: i + 1, replaced: modified.trim(), with: replaced.trim() });
         modified = replaced;

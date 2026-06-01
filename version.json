@@ -1,10 +1,10 @@
 {
-  "version": "0.3.1",
+  "version": "0.3.2",
   "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "web-plus-x86-plus-goto-rewrite",
-  "milestone": "Transformer pass-2: forward GOTO-to-label-after-WEND/NEXT/LOOP → EXIT WHILE/FOR/DO + label-regex fix (indented labels) + LABEL_RE bugfix found via K2026",
+  "type": "transformer-pass-2-then-injection",
+  "milestone": "Pass-2 rewrites IF...GOTO (no THEN) injecteren THEN vóór EXIT — anders syntax-error in QBJS",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   },

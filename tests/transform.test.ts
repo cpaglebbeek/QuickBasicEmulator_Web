@@ -75,6 +75,12 @@ describe('transform — reports', () => {
 });
 
 describe('transform — pass 2: forward GOTO → EXIT (v0.2.1)', () => {
+  it('rewrites IF...GOTO (no THEN) by injecting THEN before EXIT', () => {
+    const src = 'WHILE 1\n  IF x = 5 GOTO done\n  x = x + 1\nWEND\ndone:\nEND';
+    const { transformed } = transformClassicToStructured(src);
+    expect(transformed).toMatch(/IF x = 5 THEN EXIT WHILE/i);
+  });
+
   it('rewrites GOTO label-after-WEND to EXIT WHILE', () => {
     const src = 'i = 0\nWHILE 1\n  IF i = 5 THEN GOTO finished\n  i = i + 1\nWEND\nfinished:\nPRINT "done"';
     const { transformed, report } = transformClassicToStructured(src);
