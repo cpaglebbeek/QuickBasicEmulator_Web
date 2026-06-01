@@ -1,10 +1,10 @@
 {
-  "version": "0.3.8",
+  "version": "0.3.9",
   "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "transformer-pass-order-fix",
-  "milestone": "Pass-order fix: pass-3 (dangling-label removal) vóór pass-3a (trailing-colon strip)",
+  "type": "transformer-pass-3b-then-else-colon-strip",
+  "milestone": "Pass-3b: strip ':' tussen THEN-clause en ELSE in single-line IF (K2026 line 16)",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   }

@@ -230,6 +230,17 @@ export function transformClassicToStructured(source: string): TransformResult {
     }
   }
 
+  // Pass 3b (v0.3.9): strip ':' before ELSE in single-line IF-THEN-ELSE.
+  // K2026 line 16: 'THEN stmt:    ELSE stmt' — QBJS choking on ': ELSE'.
+  for (let i = 0; i < gotoFixed.length; i++) {
+    const raw = gotoFixed[i] ?? '';
+    if (isCommentLine(raw)) continue;
+    if (LABEL_RE.test(raw)) continue;
+    if (/\bTHEN\b[^"]*:\s+ELSE\b/i.test(raw)) {
+      gotoFixed[i] = raw.replace(/(\bTHEN\b[^"]*?):\s+(ELSE\b)/i, '$1 $2');
+    }
+  }
+
   // Pass 3a (v0.3.7): strip trailing ':' from non-comment lines (after string-strip).
   // QBJS may fail to parse "stmt:" with no following code — interprets ':' as start of label.
   // Skip lines that are still pure labels (in case any survived as kept-references).
