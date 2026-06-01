@@ -1,10 +1,10 @@
 {
-  "version": "0.3.6",
+  "version": "0.3.7",
   "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "transformer-pass-3-dangling-label-removal",
-  "milestone": "Pass-3: verwijdert dangling labels (zonder GOTO/GOSUB-refs) — voorkomt QBJS JS-label syntax-errors",
+  "type": "transformer-pass-3a-trailing-colon-strip",
+  "milestone": "Strip trailing : from non-comment lines (QBJS parse-failure root-cause)",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   }

@@ -218,6 +218,17 @@ export function transformClassicToStructured(source: string): TransformResult {
   // Pass 2: forward-GOTO → EXIT-statement rewrite.
   const { lines: gotoFixed, rewrites } = rewriteForwardGotoToExit(out, findLabels(out));
 
+  // Pass 3a (v0.3.7): strip trailing ':' from non-comment lines (after string-strip).
+  // QBJS may fail to parse "stmt:" with no following code — interprets ':' as start of label.
+  for (let i = 0; i < gotoFixed.length; i++) {
+    const raw = gotoFixed[i] ?? '';
+    if (isCommentLine(raw)) continue;
+    const stripped = raw.replace(/"[^"]*"/g, '""').replace(/'.*$/, '');
+    if (/:\s*$/.test(stripped)) {
+      gotoFixed[i] = raw.replace(/(:\s*)('.*)?$/, (_full, _colon, tail) => (tail ?? ''));
+    }
+  }
+
   // Pass 3 (v0.3.6): remove dangling labels (no GOTO/GOSUB references remain).
   // After GOTO→EXIT rewrites, some labels may have zero references left. QBJS
   // transpiles QB-labels to JS-labels; dangling JS-labels in awkward positions
