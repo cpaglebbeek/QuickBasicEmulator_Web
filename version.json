@@ -1,10 +1,10 @@
 {
-  "version": "0.3.5",
+  "version": "0.3.6",
   "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "transformer-trailing-newline",
-  "milestone": "Trailing newline na laatste END SUB — voorkomt parse-failure",
+  "type": "transformer-pass-3-dangling-label-removal",
+  "milestone": "Pass-3: verwijdert dangling labels (zonder GOTO/GOSUB-refs) — voorkomt QBJS JS-label syntax-errors",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   }

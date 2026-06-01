@@ -218,6 +218,20 @@ export function transformClassicToStructured(source: string): TransformResult {
   // Pass 2: forward-GOTO → EXIT-statement rewrite.
   const { lines: gotoFixed, rewrites } = rewriteForwardGotoToExit(out, findLabels(out));
 
+  // Pass 3 (v0.3.6): remove dangling labels (no GOTO/GOSUB references remain).
+  // After GOTO→EXIT rewrites, some labels may have zero references left. QBJS
+  // transpiles QB-labels to JS-labels; dangling JS-labels in awkward positions
+  // can cause "Unexpected token ':'" parse-failures. Safe to remove orphans.
+  const refs = findReferences(gotoFixed);
+  const allRefs = new Set([...refs.gosubTargets, ...refs.gotoTargets]);
+  for (let i = 0; i < gotoFixed.length; i++) {
+    const m = LABEL_RE.exec(gotoFixed[i] ?? '');
+    if (m && m[1] && !allRefs.has(m[1])) {
+      // Replace dangling label with comment to preserve line numbers
+      gotoFixed[i] = `' [QBE: removed dangling label ${m[1]}]`;
+    }
+  }
+
   return {
     transformed: gotoFixed.join('\n') + '\n',
     report: {

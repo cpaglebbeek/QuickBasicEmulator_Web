@@ -1,6 +1,6 @@
 {
   "name": "quickbasic-emulator-web",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "Browser runtime for QuickBasicEmulator (GW-BASIC, QBasic, QuickBASIC 4.5) — vendored QBJS + dialect-adapter",
   "type": "module",
   "private": true,
