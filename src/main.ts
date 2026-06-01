@@ -12,6 +12,7 @@ import version from '../version.json';
 import { compress } from 'lzutf8';
 import { setDialect, validate, getSpec, type Dialect } from './dialect-adapter';
 import { detectRuntimeWarnings } from './dialects/runtime-warnings';
+import { transformClassicToStructured } from './transform/classic-to-structured';
 
 console.log(`QuickBasicEmulator_Web v${version.version}-${version.codename} (${version.released})`);
 
@@ -21,6 +22,7 @@ const $status = document.getElementById('status') as HTMLDivElement | null;
 const $validateBtn = document.getElementById('validate-btn') as HTMLButtonElement | null;
 const $runBtn = document.getElementById('run-btn') as HTMLButtonElement | null;
 const $ideBtn = document.getElementById('ide-btn') as HTMLButtonElement | null;
+const $transformBtn = document.getElementById('transform-btn') as HTMLButtonElement | null;
 const $info = document.getElementById('dialect-info') as HTMLSpanElement | null;
 const $fileInput = document.getElementById('file-input') as HTMLInputElement | null;
 const $clearBtn = document.getElementById('clear-btn') as HTMLButtonElement | null;
@@ -150,5 +152,25 @@ $dialect?.addEventListener('change', refreshInfo);
 $validateBtn?.addEventListener('click', () => { validateNow(); });
 $runBtn?.addEventListener('click', () => { runProgram(true); });
 $ideBtn?.addEventListener('click', () => { runProgram(false); });
+$transformBtn?.addEventListener('click', () => {
+  if (!$source) return;
+  const src = $source.value;
+  const { transformed, report } = transformClassicToStructured(src);
+  if (report.generated_subs.length === 0) {
+    showStatus(
+      `<strong>Transform:</strong> no transformable GOSUB-blocks found. ${report.skipped_labels.length} labels skipped.${report.goto_targets.length ? ` ${report.goto_targets.length} GOTO target(s) remain — those need v0.3.0-Chen.` : ''}`,
+      'info'
+    );
+    return;
+  }
+  $source.value = transformed;
+  const summary = `Transformed ${report.generated_subs.length} GOSUB-block(s) → SUB: ${report.generated_subs.map(escapeHtml).join(', ')}.`;
+  const skipped = report.skipped_labels.length ? `<br>Skipped ${report.skipped_labels.length} label(s).` : '';
+  const gotos = report.goto_targets.length ? ` ${report.goto_targets.length} GOTO target(s) remain (v0.3.0-Chen).` : '';
+  showStatus(`<strong>Transform:</strong> ${summary}${skipped}${gotos}<br>Opening QBJS auto-run...`, 'ok');
+  // Open with transformed source.
+  const b64 = compress(transformed, { outputEncoding: 'Base64' }) as string;
+  window.open(`./vendor/qbjs/#mode=auto&code=${b64}`, '_blank');
+});
 
 refreshInfo();

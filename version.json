@@ -1,12 +1,12 @@
 {
-  "version": "0.1.7",
-  "codename": "Letwin",
+  "version": "0.2.0",
+  "codename": "Weiland",
   "released": "2026-06-01",
   "stable": true,
-  "type": "mvp-1-live",
-  "milestone": "runtime-warnings nu gegenereerd uit Core runtime_capability_qbjs.json matrix (single-source-of-truth, geen dubbele patterns)",
+  "type": "mvp-1-plus-transformer",
+  "milestone": "Classic-to-structured transformer — herschrijft veilige GOSUB-RETURN blocks naar SUB procedures (K2026C-style draaibaar in QBJS), GOTO blijft v0.3.0-Chen",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   },
-  "next_milestone": "v0.2.0-Weiland: classic-to-structured transformer (maakt K2026C draaibaar)"
+  "next_milestone": "v0.3.0-Chen X86 fork QB64-PE (GOTO/GOSUB native runtime)"
 }
