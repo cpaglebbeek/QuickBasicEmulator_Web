@@ -9,6 +9,7 @@
  */
 
 import version from '../version.json';
+import { compress } from 'lzutf8';
 import { setDialect, validate, getSpec, type Dialect } from './dialect-adapter';
 import { detectRuntimeWarnings } from './dialects/runtime-warnings';
 
@@ -70,18 +71,19 @@ function escapeHtml(s: string): string {
   return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
 }
 
-function runProgram(): void {
+function runProgram(autoRun: boolean): void {
   if (!validateNow()) return;
   const source = $source?.value || '';
-  // QBJS shareable URL convention: lzutf8+base64 encoded. For v0.0.3 we just open the IDE
-  // and let the user paste; full URL-encoding integration in v0.0.4-Whitten.
-  const ideUrl = './vendor/qbjs/';
-  try {
-    localStorage.setItem('qbe_pending_source', source);
-    localStorage.setItem('qbe_pending_dialect', currentDialect());
-  } catch { /* ignore quota */ }
+  // Per qbjs-ide.js:104 + :483: code is lzutf8-compressed + base64 in URL hash, RAW (no encodeURIComponent).
+  // mode=auto auto-runs; without mode loads the IDE with source ready.
+  const b64 = compress(source, { outputEncoding: 'Base64' }) as string;
+  const modePart = autoRun ? 'mode=auto&' : '';
+  const ideUrl = `./vendor/qbjs/#${modePart}code=${b64}`;
   window.open(ideUrl, '_blank');
-  showStatus(`<strong>${currentDialect().toUpperCase()}</strong>: validated. QBJS IDE opened in new tab — paste source there for v0.0.3.`, 'info');
+  showStatus(
+    `<strong>${currentDialect().toUpperCase()}</strong>: QBJS IDE opened ${autoRun ? '(auto-run)' : '(ready to Run)'} with ${source.length}-byte source.`,
+    'info'
+  );
 }
 
 /** Auto-detect dialect from filename hints. Returns null if no hint found. */
@@ -145,6 +147,6 @@ $source?.addEventListener('drop', (e) => {
 
 $dialect?.addEventListener('change', refreshInfo);
 $validateBtn?.addEventListener('click', () => { validateNow(); });
-$runBtn?.addEventListener('click', () => { runProgram(); });
+$runBtn?.addEventListener('click', () => { runProgram(true); });
 
 refreshInfo();
