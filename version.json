@@ -1,10 +1,10 @@
 {
-  "version": "0.3.7",
+  "version": "0.3.8",
   "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "transformer-pass-3a-trailing-colon-strip",
-  "milestone": "Strip trailing : from non-comment lines (QBJS parse-failure root-cause)",
+  "type": "transformer-pass-order-fix",
+  "milestone": "Pass-order fix: pass-3 (dangling-label removal) vóór pass-3a (trailing-colon strip)",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   }

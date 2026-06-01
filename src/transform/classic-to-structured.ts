@@ -218,28 +218,28 @@ export function transformClassicToStructured(source: string): TransformResult {
   // Pass 2: forward-GOTO → EXIT-statement rewrite.
   const { lines: gotoFixed, rewrites } = rewriteForwardGotoToExit(out, findLabels(out));
 
-  // Pass 3a (v0.3.7): strip trailing ':' from non-comment lines (after string-strip).
-  // QBJS may fail to parse "stmt:" with no following code — interprets ':' as start of label.
-  for (let i = 0; i < gotoFixed.length; i++) {
-    const raw = gotoFixed[i] ?? '';
-    if (isCommentLine(raw)) continue;
-    const stripped = raw.replace(/"[^"]*"/g, '""').replace(/'.*$/, '');
-    if (/:\s*$/.test(stripped)) {
-      gotoFixed[i] = raw.replace(/(:\s*)('.*)?$/, (_full, _colon, tail) => (tail ?? ''));
-    }
-  }
-
   // Pass 3 (v0.3.6): remove dangling labels (no GOTO/GOSUB references remain).
-  // After GOTO→EXIT rewrites, some labels may have zero references left. QBJS
-  // transpiles QB-labels to JS-labels; dangling JS-labels in awkward positions
-  // can cause "Unexpected token ':'" parse-failures. Safe to remove orphans.
+  // MUST run BEFORE pass-3a (trailing-colon strip) — otherwise labels lose their
+  // colon and LABEL_RE no longer matches them. Order matters.
   const refs = findReferences(gotoFixed);
   const allRefs = new Set([...refs.gosubTargets, ...refs.gotoTargets]);
   for (let i = 0; i < gotoFixed.length; i++) {
     const m = LABEL_RE.exec(gotoFixed[i] ?? '');
     if (m && m[1] && !allRefs.has(m[1])) {
-      // Replace dangling label with comment to preserve line numbers
       gotoFixed[i] = `' [QBE: removed dangling label ${m[1]}]`;
+    }
+  }
+
+  // Pass 3a (v0.3.7): strip trailing ':' from non-comment lines (after string-strip).
+  // QBJS may fail to parse "stmt:" with no following code — interprets ':' as start of label.
+  // Skip lines that are still pure labels (in case any survived as kept-references).
+  for (let i = 0; i < gotoFixed.length; i++) {
+    const raw = gotoFixed[i] ?? '';
+    if (isCommentLine(raw)) continue;
+    if (LABEL_RE.test(raw)) continue; // skip pure labels
+    const stripped = raw.replace(/"[^"]*"/g, '""').replace(/'.*$/, '');
+    if (/:\s*$/.test(stripped)) {
+      gotoFixed[i] = raw.replace(/(:\s*)('.*)?$/, (_full, _colon, tail) => (tail ?? ''));
     }
   }
 
