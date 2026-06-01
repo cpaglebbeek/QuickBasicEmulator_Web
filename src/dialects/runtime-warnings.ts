@@ -17,26 +17,27 @@ export interface RuntimeWarning {
   message: string;
 }
 
+// Order matters: ON GOTO/GOSUB before bare GOTO/GOSUB so compound match wins.
 const PATTERNS: { re: RegExp; feature: string; message: string }[] = [
   {
-    re: /^\s*\d*\s*GOTO\b/i,
+    re: /\bON\s+\w+\s+(?:GOTO|GOSUB)\b/i,
+    feature: 'ON GOTO/GOSUB',
+    message: 'QBJS-runtime does not implement ON x GOTO/GOSUB dispatch.',
+  },
+  {
+    re: /\bGOTO\b/i,
     feature: 'GOTO',
     message: 'QBJS-runtime ignores GOTO statements. Use SUB/FUNCTION + structured loops, or wait for QuickBasicEmulator_X86 (v0.3.0-Chen).',
   },
   {
-    re: /^\s*\d*\s*GOSUB\b/i,
+    re: /\bGOSUB\b/i,
     feature: 'GOSUB',
     message: 'QBJS-runtime ignores GOSUB statements. Use SUB/FUNCTION procedures, or wait for QuickBasicEmulator_X86.',
   },
   {
-    re: /^\s*\d*\s*RETURN\b(?!\s*=)/i,
+    re: /\bRETURN\b(?!\s*=)/i,
     feature: 'RETURN',
     message: 'QBJS-runtime ignores standalone RETURN (GOSUB-return). FUNCTION-name = ... assignment is fine.',
-  },
-  {
-    re: /^\s*\d*\s*ON\s+\w+\s+(GOTO|GOSUB)\b/i,
-    feature: 'ON GOTO/GOSUB',
-    message: 'QBJS-runtime does not implement ON x GOTO/GOSUB dispatch.',
   },
 ];
 
