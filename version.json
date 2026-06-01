@@ -1,11 +1,12 @@
 {
-  "version": "0.1.6",
+  "version": "0.1.7",
   "codename": "Letwin",
   "released": "2026-06-01",
   "stable": true,
   "type": "mvp-1-live",
-  "milestone": "Runtime-limiet notice in UI + package.json/version.json sync (was 0.1.4 vs 0.1.5 drift)",
+  "milestone": "runtime-warnings nu gegenereerd uit Core runtime_capability_qbjs.json matrix (single-source-of-truth, geen dubbele patterns)",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
-  }
+  },
+  "next_milestone": "v0.2.0-Weiland: classic-to-structured transformer (maakt K2026C draaibaar)"
 }

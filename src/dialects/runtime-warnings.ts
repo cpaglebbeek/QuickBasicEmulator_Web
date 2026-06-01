@@ -1,15 +1,15 @@
 /**
- * Runtime-capability warnings — v0.1.2-Letwin
+ * Runtime-capability warnings — v0.2.0-Weiland
  *
- * Onze dialect-specs zeggen dat GOTO/GOSUB/RETURN in QBasic+QB45 supported zijn (klopt).
- * Maar de QBJS-runtime negeert ze (WARN: ignoring line). Cascade-effect: WEND without WHILE,
- * IF without END IF — terwijl de source eigenlijk valide is.
+ * Sinds v0.2.0 wordt de QBJS-feature-matrix opgehaald uit Core:
+ *   @cpaglebbeek/quickbasic-emulator-core/src/spec/runtime_capability_qbjs.json
  *
- * Deze module detecteert classic-BASIC constructs en geeft warnings (geen errors).
- * Source-validatie blijft groen; user weet vooraf dat QBJS gaat falen.
- *
- * Workaround voor user: gebruik X86-runtime (v0.3.0-Chen QB64-PE-fork) zodra beschikbaar.
+ * De PATTERNS-array hieronder is gegeneerd uit die matrix (alle statements met
+ * supported=none of partial). Hierdoor groeit dialect-coverage automatisch mee
+ * met Core-updates zonder dubbele bron-van-waarheid.
  */
+
+import capability from '@cpaglebbeek/quickbasic-emulator-core/src/spec/runtime_capability_qbjs.json' assert { type: 'json' };
 
 export interface RuntimeWarning {
   line: number;
@@ -17,29 +17,45 @@ export interface RuntimeWarning {
   message: string;
 }
 
-// Order matters: ON GOTO/GOSUB before bare GOTO/GOSUB so compound match wins.
-const PATTERNS: { re: RegExp; feature: string; message: string }[] = [
-  {
-    re: /\bON\s+\w+\s+(?:GOTO|GOSUB)\b/i,
-    feature: 'ON GOTO/GOSUB',
-    message: 'QBJS-runtime does not implement ON x GOTO/GOSUB dispatch.',
-  },
-  {
-    re: /\bGOTO\b/i,
-    feature: 'GOTO',
-    message: 'QBJS-runtime ignores GOTO statements. Use SUB/FUNCTION + structured loops, or wait for QuickBasicEmulator_X86 (v0.3.0-Chen).',
-  },
-  {
-    re: /\bGOSUB\b/i,
-    feature: 'GOSUB',
-    message: 'QBJS-runtime ignores GOSUB statements. Use SUB/FUNCTION procedures, or wait for QuickBasicEmulator_X86.',
-  },
-  {
-    re: /\bRETURN\b(?!\s*=)/i,
-    feature: 'RETURN',
-    message: 'QBJS-runtime ignores standalone RETURN (GOSUB-return). FUNCTION-name = ... assignment is fine.',
-  },
-];
+// Build PATTERNS from the Core runtime-capability matrix. Order matters:
+// compound matches (ON GOTO/GOSUB) before bare ones.
+type CapStmt = { supported: 'full' | 'partial' | 'none'; qbjs_behavior?: string; workaround?: string; notes?: string };
+const stmts = capability.statements as Record<string, CapStmt>;
+
+function escapeRegExpWord(name: string): string {
+  return name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+const buildPattern = (name: string, partial: boolean): RegExp => {
+  if (name === 'ON') return /\bON\s+\w+\s+(?:GOTO|GOSUB)\b/i;
+  if (name === 'RETURN' && partial) return /\bRETURN\b(?!\s*=)/i; // partial: standalone only
+  const escaped = name.split(/\s+/).map(escapeRegExpWord).join('\\s+');
+  return new RegExp(`\\b${escaped}\\b`, 'i');
+};
+
+const CAP_GAPS: { re: RegExp; feature: string; message: string }[] = (() => {
+  const compound = ['ON']; // multi-word matches first
+  const order = [...compound, ...Object.keys(stmts).filter((k) => !compound.includes(k))];
+  const out: { re: RegExp; feature: string; message: string }[] = [];
+  for (const name of order) {
+    const s = stmts[name];
+    if (!s) continue;
+    if (s.supported === 'full') continue;
+    const partial = s.supported === 'partial';
+    const verb = partial ? 'partial support' : 'ignored';
+    const workaround = s.workaround ? ` ${s.workaround}` : '';
+    const note = s.notes ? ` (${s.notes})` : '';
+    out.push({
+      re: buildPattern(name, partial),
+      feature: name === 'ON' ? 'ON GOTO/GOSUB' : name,
+      message: `QBJS-runtime: ${name} ${verb}${note}.${workaround}`,
+    });
+  }
+  return out;
+})();
+
+// Backward-compat alias for existing tests/imports.
+const PATTERNS = CAP_GAPS;
 
 export function detectRuntimeWarnings(source: string): RuntimeWarning[] {
   const warnings: RuntimeWarning[] = [];
