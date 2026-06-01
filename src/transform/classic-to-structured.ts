@@ -27,6 +27,7 @@ export interface TransformReport {
   generated_subs: string[];
   skipped_labels: { name: string; reason: string }[];
   goto_targets: string[];
+  goto_to_exit_rewrites: { line: number; replaced: string; with: string }[];
   total_lines_in: number;
   total_lines_out: number;
 }
@@ -36,7 +37,7 @@ export interface TransformResult {
   report: TransformReport;
 }
 
-const LABEL_RE = /^([A-Za-z_][A-Za-z0-9_]*)\s*:\s*$/;
+const LABEL_RE = /^\s*([A-Za-z_][A-Za-z0-9_]*)\s*:\s*$/;
 const GOSUB_RE = /\bGOSUB\s+([A-Za-z_][A-Za-z0-9_]*)\b/gi;
 const GOTO_RE = /\bGOTO\s+([A-Za-z_][A-Za-z0-9_]*)\b/gi;
 const RETURN_RE = /^\s*RETURN\s*$/i;
@@ -84,6 +85,63 @@ function findBlockEnd(lines: string[], startIdx: number): number {
     if (next) return -1; // hit another label before RETURN — too complex for v0.2.0
   }
   return -1;
+}
+
+/**
+ * Pass 2: rewrite forward GOTO labelname where the label sits IMMEDIATELY after the
+ * end of an enclosing WHILE/FOR/DO loop. In that case the GOTO is a "break" pattern
+ * and can be safely replaced with EXIT WHILE / EXIT FOR / EXIT DO.
+ *
+ * Returns mutated copy of lines + list of rewrites for the report.
+ */
+function rewriteForwardGotoToExit(
+  lines: string[],
+  labels: Map<string, number>
+): { lines: string[]; rewrites: TransformReport['goto_to_exit_rewrites'] } {
+  const rewrites: TransformReport['goto_to_exit_rewrites'] = [];
+  const out = [...lines];
+
+  // For each label, look backward from label-line skipping comments/blanks to find
+  // the previous code line. If it is WEND/NEXT/LOOP, we know the label sits after a loop.
+  const labelLoopType = new Map<string, 'WHILE' | 'FOR' | 'DO'>();
+  for (const [name, labelIdx] of labels) {
+    for (let i = labelIdx - 1; i >= 0; i--) {
+      const t = (out[i] ?? '').trim();
+      if (t === '' || t.startsWith("'") || /^REM\b/i.test(t)) continue;
+      if (/^WEND\s*$/i.test(t)) labelLoopType.set(name, 'WHILE');
+      else if (/^NEXT(\s|\b)/i.test(t)) labelLoopType.set(name, 'FOR');
+      else if (/^LOOP(\s|$|\b)/i.test(t)) labelLoopType.set(name, 'DO');
+      break;
+    }
+  }
+  if (labelLoopType.size === 0) return { lines: out, rewrites };
+
+  // Now rewrite GOTO label uses (must be FORWARD: GOTO line < label line).
+  for (let i = 0; i < out.length; i++) {
+    const raw = out[i] ?? '';
+    if (isCommentLine(raw)) continue;
+    const code = raw.replace(/"[^"]*"/g, (m) => '"' + '_'.repeat(m.length - 2) + '"');
+    GOTO_RE.lastIndex = 0;
+    let m: RegExpExecArray | null;
+    let modified = raw;
+    while ((m = GOTO_RE.exec(code)) !== null) {
+      const name = m[1];
+      if (!name) continue;
+      const labelIdx = labels.get(name);
+      const loopType = labelLoopType.get(name);
+      if (labelIdx === undefined || loopType === undefined) continue;
+      if (i >= labelIdx) continue; // not forward
+      const exitStmt = `EXIT ${loopType}`;
+      const gotoRe = new RegExp(`\\bGOTO\\s+${name}\\b`, 'i');
+      const replaced = modified.replace(gotoRe, exitStmt);
+      if (replaced !== modified) {
+        rewrites.push({ line: i + 1, replaced: modified.trim(), with: replaced.trim() });
+        modified = replaced;
+      }
+    }
+    out[i] = modified;
+  }
+  return { lines: out, rewrites };
 }
 
 export function transformClassicToStructured(source: string): TransformResult {
@@ -145,14 +203,18 @@ export function transformClassicToStructured(source: string): TransformResult {
   // Append generated SUBs.
   out.push(...subDefs);
 
+  // Pass 2: forward-GOTO → EXIT-statement rewrite.
+  const { lines: gotoFixed, rewrites } = rewriteForwardGotoToExit(out, findLabels(out));
+
   return {
-    transformed: out.join('\n'),
+    transformed: gotoFixed.join('\n'),
     report: {
       generated_subs: generatedSubs,
       skipped_labels: skipped,
       goto_targets: Array.from(gotoTargets),
+      goto_to_exit_rewrites: rewrites,
       total_lines_in: lines.length,
-      total_lines_out: out.length,
+      total_lines_out: gotoFixed.length,
     },
   };
 }

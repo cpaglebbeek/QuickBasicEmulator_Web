@@ -74,6 +74,52 @@ describe('transform — reports', () => {
   });
 });
 
+describe('transform — pass 2: forward GOTO → EXIT (v0.2.1)', () => {
+  it('rewrites GOTO label-after-WEND to EXIT WHILE', () => {
+    const src = 'i = 0\nWHILE 1\n  IF i = 5 THEN GOTO finished\n  i = i + 1\nWEND\nfinished:\nPRINT "done"';
+    const { transformed, report } = transformClassicToStructured(src);
+    expect(transformed).toContain('EXIT WHILE');
+    expect(transformed).not.toMatch(/GOTO\s+finished/i);
+    expect(report.goto_to_exit_rewrites.length).toBe(1);
+    expect(report.goto_to_exit_rewrites[0]!.with).toContain('EXIT WHILE');
+  });
+
+  it('rewrites GOTO label-after-NEXT to EXIT FOR', () => {
+    const src = 'FOR i = 1 TO 10\n  IF i = 5 THEN GOTO done\nNEXT\ndone:\nPRINT "x"';
+    const { transformed, report } = transformClassicToStructured(src);
+    expect(transformed).toContain('EXIT FOR');
+    expect(report.goto_to_exit_rewrites.length).toBe(1);
+  });
+
+  it('rewrites GOTO label-after-LOOP to EXIT DO', () => {
+    const src = 'DO\n  IF cond THEN GOTO leave\nLOOP\nleave:\nEND';
+    const { transformed, report } = transformClassicToStructured(src);
+    expect(transformed).toContain('EXIT DO');
+    expect(report.goto_to_exit_rewrites.length).toBe(1);
+  });
+
+  it('does NOT rewrite backward GOTO (label before goto)', () => {
+    const src = 'start:\nPRINT 1\nWEND\nGOTO start';
+    const { transformed, report } = transformClassicToStructured(src);
+    expect(transformed).toMatch(/GOTO\s+start/i);
+    expect(report.goto_to_exit_rewrites.length).toBe(0);
+  });
+
+  it('does NOT rewrite GOTO to label not after WEND/NEXT/LOOP', () => {
+    const src = 'GOTO middle\nPRINT 1\nmiddle:\nPRINT 2';
+    const { transformed, report } = transformClassicToStructured(src);
+    expect(transformed).toMatch(/GOTO\s+middle/i);
+    expect(report.goto_to_exit_rewrites.length).toBe(0);
+  });
+
+  it('does NOT match GOTO inside string literal', () => {
+    const src = 'WHILE 1\n  PRINT "GOTO eindewhile"\nWEND\neindewhile:';
+    const { report } = transformClassicToStructured(src);
+    // The PRINT contains "GOTO eindewhile" but it's a string literal — must not rewrite
+    expect(report.goto_to_exit_rewrites.length).toBe(0);
+  });
+});
+
 describe('transform — Core sample corpus', () => {
   const samples = '/Users/christian/Documents/Gemini_Projects/QuickBasicEmulator_Core/tests/samples';
   it('procedures_gwbasic.bas: transforms Double subroutine', () => {

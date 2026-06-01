@@ -1,10 +1,10 @@
 {
-  "version": "0.3.0",
+  "version": "0.3.1",
   "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "web-plus-x86-announcement",
-  "milestone": "Web bumped to v0.3.0-Chen om aan te kondigen dat X86 native runtime nu LIVE is",
+  "type": "web-plus-x86-plus-goto-rewrite",
+  "milestone": "Transformer pass-2: forward GOTO-to-label-after-WEND/NEXT/LOOP → EXIT WHILE/FOR/DO + label-regex fix (indented labels) + LABEL_RE bugfix found via K2026",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   },
