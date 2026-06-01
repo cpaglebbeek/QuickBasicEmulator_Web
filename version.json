@@ -1,10 +1,10 @@
 {
-  "version": "0.3.4",
+  "version": "0.3.5",
   "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "transformer-pass-2-properly-wired",
-  "milestone": "Pass-2 nu daadwerkelijk gebruikt innermostLoopAt (v0.3.3 had OUDE labelLoopType nog actief, edit was niet volledig geland)",
+  "type": "transformer-trailing-newline",
+  "milestone": "Trailing newline na laatste END SUB — voorkomt parse-failure",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   }
