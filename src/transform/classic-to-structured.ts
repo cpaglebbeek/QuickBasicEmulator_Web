@@ -219,7 +219,7 @@ export function transformClassicToStructured(source: string): TransformResult {
   const { lines: gotoFixed, rewrites } = rewriteForwardGotoToExit(out, findLabels(out));
 
   return {
-    transformed: gotoFixed.join('\n'),
+    transformed: gotoFixed.join('\n') + '\n',
     report: {
       generated_subs: generatedSubs,
       skipped_labels: skipped,
