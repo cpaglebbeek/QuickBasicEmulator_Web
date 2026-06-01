@@ -1,12 +1,14 @@
 {
-  "version": "0.2.0",
-  "codename": "Weiland",
+  "version": "0.3.0",
+  "codename": "Chen",
   "released": "2026-06-01",
   "stable": true,
-  "type": "mvp-1-plus-transformer",
-  "milestone": "Classic-to-structured transformer — herschrijft veilige GOSUB-RETURN blocks naar SUB procedures (K2026C-style draaibaar in QBJS), GOTO blijft v0.3.0-Chen",
+  "type": "web-plus-x86-announcement",
+  "milestone": "Web bumped to v0.3.0-Chen om aan te kondigen dat X86 native runtime nu LIVE is",
   "vendored": {
     "boxgaming/qbjs": "e3ca41c62975ccc8734dd9c640cf7e9c081df2b8"
   },
-  "next_milestone": "v0.3.0-Chen X86 fork QB64-PE (GOTO/GOSUB native runtime)"
+  "sibling_repos": {
+    "x86_native": "https://github.com/cpaglebbeek/QuickBasicEmulator_X86 (v0.3.0-Chen)"
+  }
 }
