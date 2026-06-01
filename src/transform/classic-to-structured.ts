@@ -230,6 +230,24 @@ export function transformClassicToStructured(source: string): TransformResult {
     }
   }
 
+  // Pass 3c (v0.3.10): split single-line WHILE/WEND and DO/LOOP. QBJS struggles
+  // with multi-statement loop-open/close on one line. K2026: WHILE INKEY$ = "": WEND.
+  for (let i = 0; i < gotoFixed.length; i++) {
+    const raw = gotoFixed[i] ?? '';
+    if (isCommentLine(raw)) continue;
+    if (LABEL_RE.test(raw)) continue;
+    // Match WHILE ... : WEND on one line (allow "" string literals in clause).
+    const wendMatch = raw.match(/^(\s*)(WHILE\b(?:[^":]|"[^"]*")*?):\s*(WEND\b.*)$/i);
+    if (wendMatch) {
+      gotoFixed[i] = `${wendMatch[1]}${wendMatch[2]}\n${wendMatch[1]}${wendMatch[3]}`;
+      continue;
+    }
+    const loopMatch = raw.match(/^(\s*)(DO\b(?:[^":]|"[^"]*")*?):\s*(LOOP\b.*)$/i);
+    if (loopMatch) {
+      gotoFixed[i] = `${loopMatch[1]}${loopMatch[2]}\n${loopMatch[1]}${loopMatch[3]}`;
+    }
+  }
+
   // Pass 3b (v0.3.9): strip ':' before ELSE in single-line IF-THEN-ELSE.
   // K2026 line 16: 'THEN stmt:    ELSE stmt' — QBJS choking on ': ELSE'.
   for (let i = 0; i < gotoFixed.length; i++) {
