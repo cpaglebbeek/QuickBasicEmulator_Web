@@ -20,6 +20,7 @@ const $source = document.getElementById('source') as HTMLTextAreaElement | null;
 const $status = document.getElementById('status') as HTMLDivElement | null;
 const $validateBtn = document.getElementById('validate-btn') as HTMLButtonElement | null;
 const $runBtn = document.getElementById('run-btn') as HTMLButtonElement | null;
+const $ideBtn = document.getElementById('ide-btn') as HTMLButtonElement | null;
 const $info = document.getElementById('dialect-info') as HTMLSpanElement | null;
 const $fileInput = document.getElementById('file-input') as HTMLInputElement | null;
 const $clearBtn = document.getElementById('clear-btn') as HTMLButtonElement | null;
@@ -148,5 +149,6 @@ $source?.addEventListener('drop', (e) => {
 $dialect?.addEventListener('change', refreshInfo);
 $validateBtn?.addEventListener('click', () => { validateNow(); });
 $runBtn?.addEventListener('click', () => { runProgram(true); });
+$ideBtn?.addEventListener('click', () => { runProgram(false); });
 
 refreshInfo();
